@@ -1,0 +1,6 @@
+[package]
+name = "snippets"
+version = "0.0.1"
+edition = "2021"
+authors = ["stackinspector"]
+license = "MPL-2.0"
