@@ -1,6 +1,14 @@
-use std::{collections::HashMap, time::SystemTime};
+use std::{collections::HashMap as Map, time::SystemTime};
 use chrono::{NaiveDate, Datelike};
-use memuse::DynamicUsage;
+use deepsize::DeepSizeOf;
+
+trait TypeNameOf {
+    fn type_name(&self) -> &'static str {
+        core::any::type_name::<Self>()
+    }
+}
+
+impl<T> TypeNameOf for T {}
 
 type Int = u32;
 
@@ -87,11 +95,14 @@ fn main() {
     let end = NaiveDate::from_ymd_opt(2100, 12, 31).unwrap();
     let max_root = sqrt_nextint(datenum(end));
 
+    dbg!(start);
+    dbg!(end);
     dbg!(max_root);
 
-    let num_set: HashMap<u32, u32> = HashMap::from_iter(FullSquareNumIter::new(1, max_root));
+    let num_set: Map<u32, u32> = Map::from_iter(FullSquareNumIter::new(1, max_root));
 
-    dbg!(num_set.dynamic_usage());
+    dbg!(num_set.type_name());
+    dbg!(num_set.deep_size_of());
 
     let mut result_set = Vec::new();
 
