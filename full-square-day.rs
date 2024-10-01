@@ -89,8 +89,6 @@ impl Iterator for FullSquareNumIter {
 }
 
 fn main() {
-    let run_start = SystemTime::now();
-
     let start = NaiveDate::from_ymd_opt(2001, 1, 1).unwrap();
     let end = NaiveDate::from_ymd_opt(2100, 12, 31).unwrap();
     let max_root = sqrt_nextint(datenum(end));
@@ -99,11 +97,9 @@ fn main() {
     dbg!(end);
     dbg!(max_root);
 
+    let run_start = SystemTime::now();
+
     let num_set: Map<u32, u32> = Map::from_iter(FullSquareNumIter::new(1, max_root));
-
-    dbg!(num_set.type_name());
-    dbg!(num_set.deep_size_of());
-
     let mut result_set = Vec::new();
 
     for datenum in DateNumIter::new(start, end) {
@@ -113,6 +109,9 @@ fn main() {
     }
 
     dbg!(run_start.elapsed().unwrap());
+
+    dbg!(num_set.type_name());
+    dbg!(num_set.deep_size_of());
     dbg!(result_set.len());
 
     for (root, datenum) in result_set.iter() {
