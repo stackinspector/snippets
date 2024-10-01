@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::SystemTime};
 use chrono::{NaiveDate, Datelike};
+use memuse::DynamicUsage;
 
 type Int = u32;
 
@@ -80,14 +81,30 @@ impl Iterator for FullSquareNumIter {
 }
 
 fn main() {
+    let run_start = SystemTime::now();
+
     let start = NaiveDate::from_ymd_opt(2001, 1, 1).unwrap();
     let end = NaiveDate::from_ymd_opt(2100, 12, 31).unwrap();
+    let max_root = sqrt_nextint(datenum(end));
 
-    let num_set: HashMap<u32, u32> = HashMap::from_iter(FullSquareNumIter::new(1, sqrt_nextint(datenum(end))));
+    dbg!(max_root);
+
+    let num_set: HashMap<u32, u32> = HashMap::from_iter(FullSquareNumIter::new(1, max_root));
+
+    dbg!(num_set.dynamic_usage());
+
+    let mut result_set = Vec::new();
 
     for datenum in DateNumIter::new(start, end) {
         if let Some(root) = num_set.get(&datenum) {
-            println!("root={root}, datenum={datenum}");
+            result_set.push((*root, datenum));
         }
+    }
+
+    dbg!(run_start.elapsed().unwrap());
+    dbg!(result_set.len());
+
+    for (root, datenum) in result_set.iter() {
+        println!("root={root}, datenum={datenum}");
     }
 }

@@ -11,3 +11,4 @@ path = "full-square-day.rs"
 
 [dependencies]
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
+memuse = "0.2"
