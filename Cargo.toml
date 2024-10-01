@@ -6,8 +6,8 @@ authors = ["stackinspector"]
 license = "MPL-2.0"
 
 [[bin]]
-name = "full-sqrt-day"
-path = "full-sqrt-day.rs"
+name = "full-square-day"
+path = "full-square-day.rs"
 
 [dependencies]
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
