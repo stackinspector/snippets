@@ -13,7 +13,10 @@ impl<T> TypeNameOf for T {}
 type Int = u32;
 
 fn datenum(date: NaiveDate) -> Int {
-    (date.year() as Int) * 10000 + date.month() * 100 + date.day()
+    let y: Int = date.year().try_into().unwrap();
+    let m: Int = date.month().try_into().unwrap();
+    let d: Int = date.day().try_into().unwrap();
+    y * 10000 + m * 100 + d
 }
 
 fn next_day(date: NaiveDate) -> NaiveDate {

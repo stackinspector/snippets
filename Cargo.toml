@@ -9,6 +9,9 @@ license = "MPL-2.0"
 name = "full-square-day"
 path = "full-square-day.rs"
 
+[profile.release]
+overflow-checks = true
+
 [dependencies]
 chrono = { version = "0.4", default-features = false, features = ["alloc"] }
 deepsize = { version = "0.2", default-features = false, features = ["std"] }
