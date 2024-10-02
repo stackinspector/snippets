@@ -24,6 +24,10 @@ fn square(num: Int) -> Int {
     num.checked_pow(2).unwrap()
 }
 
+fn sqrt_prevint(num: Int) -> Int {
+    (num as f64).sqrt().floor() as Int
+}
+
 fn sqrt_nextint(num: Int) -> Int {
     (num as f64).sqrt().ceil() as Int
 }
@@ -91,27 +95,33 @@ impl Iterator for FullSquareNumIter {
 fn main() {
     let start = NaiveDate::from_ymd_opt(2001, 1, 1).unwrap();
     let end = NaiveDate::from_ymd_opt(2100, 12, 31).unwrap();
+    let min_root = sqrt_prevint(datenum(start));
     let max_root = sqrt_nextint(datenum(end));
 
     dbg!(start);
     dbg!(end);
+    dbg!(min_root);
     dbg!(max_root);
 
-    let run_start = SystemTime::now();
+    let num_start = SystemTime::now();
 
-    let num_set: Map<u32, u32> = Map::from_iter(FullSquareNumIter::new(1, max_root));
+    let num_set: Map<Int, Int> = Map::from_iter(FullSquareNumIter::new(min_root, max_root));
+
+    dbg!(num_start.elapsed().unwrap());
+    dbg!(num_set.len());
+    dbg!(num_set.type_name());
+    dbg!(num_set.deep_size_of());
+
+    let find_start = SystemTime::now();
+
     let mut result_set = Vec::new();
-
     for datenum in DateNumIter::new(start, end) {
         if let Some(root) = num_set.get(&datenum) {
             result_set.push((*root, datenum));
         }
     }
 
-    dbg!(run_start.elapsed().unwrap());
-
-    dbg!(num_set.type_name());
-    dbg!(num_set.deep_size_of());
+    dbg!(find_start.elapsed().unwrap());
     dbg!(result_set.len());
 
     for (root, datenum) in result_set.iter() {
