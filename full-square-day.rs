@@ -12,6 +12,7 @@ impl<T> TypeNameOf for T {}
 
 type Int = u32;
 
+#[allow(clippy::useless_conversion)]
 fn datenum(date: NaiveDate) -> Int {
     let y: Int = date.year().try_into().unwrap();
     let m: Int = date.month().try_into().unwrap();
