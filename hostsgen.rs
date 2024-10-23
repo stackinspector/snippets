@@ -87,46 +87,81 @@ impl Provider {
     }
 }
 
+enum_with_parse! {
+    enum InputType {
+        "list" -> List
+        "args" -> Args
+    } raises ()
+}
+
+struct LineFileIter {
+    handle: io::BufReader<fs::File>,
+    url_prefix: String,
+    url_buf: String,
+}
+
+impl LineFileIter {
+    fn new(path: std::ffi::OsString, provider: Provider) -> LineFileIter {
+        let handle = io::BufReader::new(fs::File::open(path).unwrap());
+        let url_prefix = provider.build_url_prefix();
+        let url_buf = String::with_capacity(url_prefix.len());
+        LineFileIter { handle, url_prefix, url_buf }
+    }
+
+    fn next(&mut self) -> Option<(&str, &str)> {
+        self.url_buf.clear();
+        self.url_buf.push_str(&self.url_prefix);
+        let read = self.handle.read_line(&mut self.url_buf).unwrap();
+        if read == 0 {
+            None
+        } else {
+            // contains \n or \r\n depends on list file
+            // won't affect http request (handled by url crate used by ureq) and end up the same in dst
+            // TODO utf8 check overhead?
+            let domain = &self.url_buf[self.url_prefix.len()..];
+            Some((&self.url_buf, domain))
+        }
+    }
+}
+
 fn main() {
-    // cargo run --release --bin hostsgen -- cf2 hosts-list hosts
+    // cargo run --release --bin hostsgen -- cf2 list hosts-list hosts
+    // cargo run --release --bin hostsgen -- cf2 args example.com
     let mut args = std::env::args_os();
     let _ = args.next();
     let provider: Provider = args.next().unwrap().into_string().unwrap().parse().unwrap();
-    let mut list = io::BufReader::new(fs::File::open(args.next().unwrap()).unwrap());
+    let input_type: InputType = args.next().unwrap().into_string().unwrap().parse().unwrap();
+    assert!(matches!(input_type, InputType::List));
+    let mut list = LineFileIter::new(args.next().unwrap(), provider);
     let dst = args.next();
     let mut dst_h: Box<dyn io::Write> = if let Some(dst_path) = dst {
         Box::new(fs::OpenOptions::new().create_new(true).write(true).open(&dst_path).unwrap())
     } else {
         Box::new(io::stdout().lock())
     };
-    let url_prefix = provider.build_url_prefix();
-    let mut url_buf = String::with_capacity(url_prefix.len());
     loop {
-        url_buf.clear();
-        url_buf.push_str(&url_prefix);
-        let read = list.read_line(&mut url_buf).unwrap();
-        if read == 0 { break; }
-        // contains \n or \r\n depends on list file
-        // won't affect http request (handled by url crate used by ureq) and end up the same in dst
-        let domain = &url_buf[url_prefix.len()..];
-        let dns_res = ureq::get(&url_buf)
-            .set("accept", "application/dns-json")
-            .set("User-Agent", "curl/8.9.1")
-            .call().unwrap();
-        assert_eq!(dns_res.status(), 200);
-        let dns_res: DnsRes = serde_json::from_reader(dns_res.into_reader()).unwrap();
-        assert_eq!(dns_res.status, 0);
-        // TODO: serde-rs/serde#745
-        // for item in dns_res.answer {
-        //     if let DnsAnswer::A(ipv4) = item {
-        //         dst_h.write_fmt(format_args!("{ipv4} {domain}")).unwrap();
-        //     }
-        // }
-        for DnsAnswer { ty, data } in dns_res.answer {
-            if ty == 1 {
-                let ip: IpAddr = data.parse().unwrap();
-                dst_h.write_fmt(format_args!("{ip} {domain}")).unwrap();
+        if let Some((url, domain)) = list.next() {
+            let dns_res = ureq::get(url)
+                .set("accept", "application/dns-json")
+                .set("User-Agent", "curl/8.9.1")
+                .call().unwrap();
+            assert_eq!(dns_res.status(), 200);
+            let dns_res: DnsRes = serde_json::from_reader(dns_res.into_reader()).unwrap();
+            assert_eq!(dns_res.status, 0);
+            // TODO: serde-rs/serde#745
+            // for item in dns_res.answer {
+            //     if let DnsAnswer::A(ipv4) = item {
+            //         dst_h.write_fmt(format_args!("{ipv4} {domain}")).unwrap();
+            //     }
+            // }
+            for DnsAnswer { ty, data } in dns_res.answer {
+                if ty == 1 {
+                    let ip: IpAddr = data.parse().unwrap();
+                    dst_h.write_fmt(format_args!("{ip} {domain}")).unwrap();
+                }
             }
+        } else {
+            break;
         }
     }
 }
