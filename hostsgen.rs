@@ -17,8 +17,10 @@ struct DnsAnswer {
 }
 
 fn main() {
+    // cargo run --release --bin hostsgen -- 1.0.0.1 hosts-list hosts
     let mut args = std::env::args_os();
     let _ = args.next();
+    let provider = args.next().unwrap().into_string().unwrap();
     let mut list = io::BufReader::new(fs::File::open(args.next().unwrap()).unwrap());
     let dst = args.next();
     let mut dst_h: Box<dyn io::Write> = if let Some(dst_path) = dst {
@@ -26,7 +28,7 @@ fn main() {
     } else {
         Box::new(io::stdout().lock())
     };
-    let url_prefix = "https://1.1.1.1/dns-query?name=";
+    let url_prefix = format!("https://{provider}/dns-query?name=");
     let mut url_buf = String::with_capacity(url_prefix.len());
     loop {
         url_buf.clear();
