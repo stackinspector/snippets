@@ -80,6 +80,8 @@ impl Provider {
     }
 
     // TODO -> &'static str
+    // TODO url::Builder
+    // TODO ureq::get<T: AsUrl>(url: T)
     fn build_url_prefix(&self) -> String {
         format!("https://{}/{}?name=", self.ipv4(), self.word())
     }
