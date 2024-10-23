@@ -10,6 +10,19 @@ struct DnsRes {
     answer: Vec<DnsAnswer>,
 }
 
+// TODO: serde-rs/serde#745
+// #[allow(dead_code, clippy::upper_case_acronyms)]
+// #[derive(Deserialize)]
+// #[serde(tag = "type", content = "data")]
+// enum DnsAnswer {
+//     #[serde(rename = "1")]
+//     A(Ipv4Addr),
+//     #[serde(rename = "28", skip)]
+//     AAAA(Ipv6Addr),
+//     #[serde(rename = "5", skip)]
+//     CNAME(String),
+// }
+
 #[derive(Deserialize)]
 struct DnsAnswer {
     #[serde(rename = "type")]
@@ -101,6 +114,12 @@ fn main() {
         assert_eq!(dns_res.status(), 200);
         let dns_res: DnsRes = serde_json::from_reader(dns_res.into_reader()).unwrap();
         assert_eq!(dns_res.status, 0);
+        // TODO: serde-rs/serde#745
+        // for item in dns_res.answer {
+        //     if let DnsAnswer::A(ipv4) = item {
+        //         dst_h.write_fmt(format_args!("{ipv4} {domain}")).unwrap();
+        //     }
+        // }
         for DnsAnswer { ty, data } in dns_res.answer {
             if ty == 1 {
                 let ip: IpAddr = data.parse().unwrap();
