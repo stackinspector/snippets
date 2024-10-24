@@ -46,6 +46,20 @@ macro_rules! enum_with_parse {
             }
         }
     };
+    ($vis:vis enum $name:ident { $($variant_str:literal -> $variant_name:ident)* } fallback $fallback_name:ident) => {
+        $vis enum $name { $($variant_name,)* $fallback_name(String) }
+        impl FromStr for $name {
+            type Err = core::convert::Infallible;
+        
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                Ok(match s {
+                    // TODO $(stringify!($variant_name) => Self::$variant_name,)* // needs `stringify!` case convert
+                    $($variant_str => Self::$variant_name,)*
+                    s => Self::$fallback_name(s.to_owned()),
+                })
+            }
+        }
+    };
 }
 
 enum_with_parse! {
@@ -55,27 +69,29 @@ enum_with_parse! {
         "dnspod" -> Dnspod
         "ali1" -> Ali1
         "ali2" -> Ali2
-    } raises ()
+    } fallback Custom
 }
 
 impl Provider {
-    fn ipv4(&self) -> &'static str {
+    fn ipv4(&self) -> &str {
         match self {
             Provider::Cf1    => "1.1.1.1",
             Provider::Cf2    => "1.0.0.1",
             Provider::Dnspod => "1.12.12.12",
             Provider::Ali1   => "223.5.5.5",
             Provider::Ali2   => "223.6.6.6",
+            Provider::Custom(ipv4) => ipv4,
         }
     }
 
     fn word(&self) -> &'static str {
         match self {
-            Provider::Cf1    |
-            Provider::Cf2    |
-            Provider::Dnspod => "dns-query",
-            Provider::Ali1   |
-            Provider::Ali2   => "resolve",
+            Provider::Cf1       |
+            Provider::Cf2       |
+            Provider::Dnspod    |
+            Provider::Custom(_) => "dns-query",
+            Provider::Ali1      |
+            Provider::Ali2      => "resolve",
         }
     }
 
