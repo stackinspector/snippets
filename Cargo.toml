@@ -17,6 +17,10 @@ path = "b64pwgen.rs"
 name = "hostsgen"
 path = "hostsgen.rs"
 
+[[bin]]
+name = "content-compare"
+path = "content-compare.rs"
+
 [profile.release]
 overflow-checks = true
 
