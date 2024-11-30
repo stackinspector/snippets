@@ -2,10 +2,10 @@
 
 use std::{collections::HashSet, io::{BufRead, BufReader, Read}};
 
-const HASH_LEN: usize = 64;
+const HASH_LEN: usize = 78;
 type Hash = [u8; HASH_LEN];
-const START_END_SEP: Hash = *b"----------------------------------------------------------------";
-const DIR_SEP:       Hash = *b"                                                                ";
+const START_END_SEP: Hash = *b"---------------------------------------------------------------- -------------";
+const DIR_SEP:       Hash = *b"                                                                              ";
 
 enum State {
     NotStarted,
