@@ -6,6 +6,10 @@ authors = ["stackinspector"]
 license = "MPL-2.0"
 
 [[bin]]
+name = "playground"
+path = "playground.rs"
+
+[[bin]]
 name = "full-square-day"
 path = "full-square-day.rs"
 
