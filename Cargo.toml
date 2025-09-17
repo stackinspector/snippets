@@ -29,6 +29,10 @@ path = "content-compare.rs"
 name = "csv-dedup"
 path = "csv-dedup.rs"
 
+[[bin]]
+name = "csv-filelist-rename"
+path = "csv-filelist-rename.rs"
+
 [profile.release]
 overflow-checks = true
 
